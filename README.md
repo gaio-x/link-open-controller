@@ -1,8 +1,8 @@
 # 链接打开方式控制器
 
-一个 [Tampermonkey（油猴）](https://www.tampermonkey.net/) 脚本：在任意网页上提供一个**可自由拖动（支持触屏）的全局悬浮按钮**，用来统一控制页面链接的打开方式——当前页面打开、新标签页打开并自动切换、新标签页后台打开。
+一个 [Tampermonkey（油猴）](https://www.tampermonkey.net/) 脚本：在任意网页上提供一个**可自由拖动（支持触屏）的全局悬浮按钮**，用来统一控制页面链接的打开方式——当前页面打开、新标签页打开并自动切换、新标签页后台打开；还能把网页中的**纯文本网址自动变成可点击链接**。
 
-![version](https://img.shields.io/badge/version-1.0.0-blue) ![license](https://img.shields.io/badge/license-MIT-green) ![platform](https://img.shields.io/badge/platform-Tampermonkey-orange)
+![version](https://img.shields.io/badge/version-1.1.1-blue) ![license](https://img.shields.io/badge/license-MIT-green) ![platform](https://img.shields.io/badge/platform-Tampermonkey-orange)
 
 ## 功能特性
 
@@ -23,6 +23,13 @@
 - **全屏自动隐藏**
   - 浏览器原生全屏（Fullscreen API）自动隐藏，退出后原位恢复
   - 视频“网页全屏”（如 B 站网页全屏）同样自动隐藏
+- **文本链接自动可点击（Linkify）**
+  - 自动识别网页中纯文本形式的 `http://` / `https://` 网址，转换为可点击链接
+  - 通过 `MutationObserver` 实时监测动态加载内容，SPA、无限滚动页面同样适用
+  - 智能修剪网址尾部的中英文标点（句号、括号等），不破坏正文
+  - 跳过表单控件、可编辑区域（contenteditable）、脚本与 SVG，安全不干扰输入
+  - 转换后的链接点击时自动遵循当前打开模式；面板独立开关，默认关闭
+- **支持自动更新**：脚本内置 `@updateURL` / `@downloadURL`，Tampermonkey 可定期检查并一键更新
 - **全站生效**：在顶层窗口与 iframe 中统一拦截，SPA 动态加载的链接同样适用；选项跨标签页实时同步
 - **零网络请求**：所有配置仅保存在本地油猴存储中，脚本不访问任何网络服务
 
@@ -61,14 +68,16 @@ Tampermonkey 会自动识别 `.user.js` 文件并弹出安装页，点击“安�
 | 图标网格 | 点击缩略图更换悬浮按钮皮肤 |
 | 透明度滑条 | 调整气泡面板背景不透明度（0.2–1） |
 | 尺寸滑条 | 调整悬浮按钮大小（40–120px） |
+| `文本链接可点击` 开关 | 开启 / 关闭纯文本网址自动识别（Linkify，默认关闭） |
 
 - 所有设置自动保存，无需手动确认。
 - 脚本在 `file://` 本地页面也可运行（需在扩展中允许 Tampermonkey 访问文件网址）。
 
 ## 数据与隐私
 
-- 仅使用 `GM_getValue` / `GM_setValue` 在本地保存配置（模式、位置、皮肤、透明度、尺寸），不收集、不上传任何数据。
+- 仅使用 `GM_getValue` / `GM_setValue` 在本地保存配置（模式、位置、皮肤、透明度、尺寸、Linkify 开关），不收集、不上传任何数据。
 - 使用 `GM_openInTab` 打开新标签页，前后台行为由浏览器扩展可靠保证。
+- 脚本运行期间不发起任何网络请求；Tampermonkey 的自动更新检查由扩展自身根据脚本头部的 `@updateURL` 完成。
 
 ## 常见问题
 
@@ -78,10 +87,24 @@ A：确认脚本处于启用状态并刷新页面；若页面存在浏览器全�
 **Q：设置在 iframe 里不生效？**
 A：脚本会在所有框架中拦截链接，并通过共享存储实时同步选项，无需额外配置。
 
+**Q：开启 Linkify 后，输入框里的网址会不会被改动？**
+A：不会。表单控件（input、textarea）和所有 contenteditable 可编辑区域中的文本都会整体跳过，不会影响正常输入。
+
 **Q：如何更新脚本？**
-A：在 Tampermonkey 中开启“检查更新”，或重新点击安装链接覆盖安装；更新不会清除已有配置。
+A：脚本已内置更新地址（`@updateURL` / `@downloadURL`），在 Tampermonkey 设置中开启自动检查更新即可定期收到更新，也可在管理面板点击“检查用户脚本更新”手动触发；更新不会清除已有配置。若你的旧版本安装时尚未包含更新地址，重新点击一次安装链接即可。
 
 ## 更新日志
+
+### 1.1.1
+
+- 添加 `@updateURL` / `@downloadURL` / `@homepageURL` 元数据，支持 Tampermonkey 自动检查与一键更新
+
+### 1.1.0
+
+- 新增**文本链接自动可点击（Linkify）**功能：纯文本 `http(s)` 网址自动转为可点击链接
+- `TreeWalker` 扫描文本节点，`MutationObserver` + `requestAnimationFrame` 批处理实时监测动态内容
+- 网址尾部中英文标点修剪与括号配对计数；跳过表单、可编辑区域、脚本与 SVG
+- 面板新增独立开关（默认关闭），转换后链接自动遵循当前打开模式，无需新增权限
 
 ### 1.0.0
 
