@@ -2,7 +2,7 @@
 
 一个 [Tampermonkey（油猴）](https://www.tampermonkey.net/) 脚本：在任意网页上提供一个**可自由拖动（支持触屏）的全局悬浮按钮**，用来统一控制页面链接的打开方式——当前页面打开、新标签页打开并自动切换、新标签页后台打开；还能把网页中的**纯文本网址自动变成可点击链接**。
 
-![version](https://img.shields.io/badge/version-1.1.1-blue) ![license](https://img.shields.io/badge/license-MIT-green) ![platform](https://img.shields.io/badge/platform-Tampermonkey-orange)
+![version](https://img.shields.io/badge/version-1.2.0-blue) ![license](https://img.shields.io/badge/license-MIT-green) ![platform](https://img.shields.io/badge/platform-Tampermonkey-orange)
 
 ## 功能特性
 
@@ -30,6 +30,7 @@
   - 跳过表单控件、可编辑区域（contenteditable）、脚本与 SVG，安全不干扰输入
   - 转换后的链接点击时自动遵循当前打开模式；面板独立开关，默认关闭
 - **支持自动更新**：脚本内置 `@updateURL` / `@downloadURL`，Tampermonkey 可定期检查并一键更新
+- **与漫画阅读类脚本兼容**：检测到"漫画织机 (Comic Looms)"生效的页面时自动让行，不做链接拦截、不启用文本链接识别，避免功能冲突与重复拦截
 - **全站生效**：在顶层窗口与 iframe 中统一拦截，SPA 动态加载的链接同样适用；选项跨标签页实时同步
 - **零网络请求**：所有配置仅保存在本地油猴存储中，脚本不访问任何网络服务
 
@@ -90,10 +91,19 @@ A：脚本会在所有框架中拦截链接，并通过共享存储实时同步�
 **Q：开启 Linkify 后，输入框里的网址会不会被改动？**
 A：不会。表单控件（input、textarea）和所有 contenteditable 可编辑区域中的文本都会整体跳过，不会影响正常输入。
 
+**Q：同时安装"漫画织机 (Comic Looms)"后，为什么在某些页面上链接打开模式不生效？**
+A：这是有意设计的兼容行为。漫画织机（漫画阅读 + 下载器）同样全局运行，并在其支持的漫画/画廊站点上接管页面的阅读交互。为避免两个脚本重复拦截链接、互相干扰，本脚本在漫画织机生效的页面上会整体让行（不拦截链接点击、不启用文本链接识别）；离开这些页面后功能自动恢复。悬浮按钮本身仍会显示，可随时切换模式。
+
 **Q：如何更新脚本？**
 A：脚本已内置更新地址（`@updateURL` / `@downloadURL`），在 Tampermonkey 设置中开启自动检查更新即可定期收到更新，也可在管理面板点击“检查用户脚本更新”手动触发；更新不会清除已有配置。若你的旧版本安装时尚未包含更新地址，重新点击一次安装链接即可。
 
 ## 更新日志
+
+### 1.2.0
+
+- 新增**与"漫画织机 (Comic Looms)"的兼容**：在其生效的页面上不再拦截链接点击、不启用文本链接识别（Linkify），避免功能冲突与重复拦截
+- 双重识别机制：内置漫画织机 v4.16.1 全部 50 个站点适配器的默认生效正则（页面加载瞬间即生效），并动态检测其阅读界面（`#ehvp-base`）挂载，覆盖用户自定义生效正则与未来新增站点
+- 漫画织机仅在顶层窗口运行，因此 iframe 中的链接控制不受影响
 
 ### 1.1.1
 
